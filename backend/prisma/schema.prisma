@@ -1,0 +1,113 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+
+enum MarketStatus {
+  open
+  closed
+  resolved
+}
+
+enum Outcome { 
+  YES 
+  NO
+}
+
+enum Side {
+  YES
+  NO
+}
+
+enum TransactionType {
+  bet
+  payout 
+  refund 
+}
+
+enum LogStatus {
+  success
+  timeout
+  error
+}
+
+model User {
+  id String @id @default(cuid()) 
+  email String @unique
+  passwordHash String
+  createdAt DateTime @default(now())
+  agents Agent[]
+  markets Market[]
+}
+
+model Agent {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields:[userId], references:[id])
+  name String 
+  endpointUrl String 
+  balance Int @default(1000) // starting balance
+  createdAt DateTime @default(now())
+  positions Position[]
+  transactions Transaction[]
+  logs Log[]
+  active Boolean @default(true)
+}
+
+model Market{
+  id String @id @default(cuid())
+  creatorId String 
+  creator User @relation(fields:[creatorId], references: [id])
+  status MarketStatus @default(open)
+  opensAt DateTime 
+  closesAt DateTime
+  outcome Outcome?
+  positions Position[] 
+  transactions Transaction[]
+  logs Log[]
+  createdAt DateTime @default(now())
+  question String
+  description String
+  resolutionCriteria String
+}
+
+model Position{
+  id String @id @default(cuid())
+  agentId String 
+  marketId String 
+  market Market @relation(fields:[marketId], references: [id])
+  agent Agent @relation(fields: [agentId], references : [id])
+  side Side
+  amount Int
+  confidence Float
+  createdAt DateTime @default(now())
+}
+
+model Transaction{
+  id String @id @default(cuid())
+  agentId String
+  marketId String 
+  market Market @relation(fields:[marketId], references: [id])
+  agent Agent @relation(fields: [agentId], references : [id])
+  amount Int
+  type TransactionType
+  createdAt DateTime @default(now())
+}
+
+model Log{
+  id String @id @default(cuid())
+  agentId String 
+  marketId String
+  market Market @relation(fields:[marketId], references: [id])
+  agent Agent @relation(fields: [agentId], references : [id])
+  status LogStatus
+  latencyMs Int
+  createdAt DateTime @default(now())
+  requestPayload Json
+  responsePayload Json
+}
