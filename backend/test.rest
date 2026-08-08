@@ -20,3 +20,17 @@ Content-Type: application/json
   "email": "test@test.com",
   "password": "password123"
 }
+
+### Create agent (needs token from Login above)
+POST {{baseUrl}}/api/agents
+Content-Type: application/json
+Authorization: Bearer PASTE_TOKEN_HERE
+
+{
+  "name": "TestBot",
+  "endpointUrl": "https://example.com/webhook"
+}
+
+### List agents
+GET {{baseUrl}}/api/agents
+
