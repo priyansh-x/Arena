@@ -97,4 +97,28 @@ router.delete("/:id", authMiddleware, async(req,res)=>{
         res.status(400).json({error: err.message})
     }
 })
+
+router.patch("/:id/toggle", authMiddleware, async(req,res)=>{
+    try{
+        const agent = await prisma.agent.findUnique({
+            where: {id: req.params.id}
+        })
+        if(!agent){
+            return res.status(404).json({error: "agent not found"})
+        }
+        if(agent.userId !== req.user.id){
+            return res.status(403).json({error: "not your agent"})
+        }
+        const toggled = await prisma.agent.update({
+            where: {id: req.params.id}, 
+            data: {active: !agent.active}
+        })
+        res.json(toggled)
+    }
+    catch(err){
+        res.status(400).json({error: err.message})
+    }
+})
+
+
 module.exports = router
