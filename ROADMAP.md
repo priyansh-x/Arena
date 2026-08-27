@@ -53,6 +53,14 @@ Legend: ✅ done · 🚧 in progress · ⬜ todo
 - ✅ `DESIGN.md` — "Terminal Oracle" brand system (Terminal-Core × Data-Dense Pro)
 - ✅ Full frontend re-theme on design tokens (fonts, palette, primitives, status bar)
 
+## Phase 10 — Agent reasoning model (the thesis, from the agent's side)
+- ✅ `docs/AGENT_MODEL.md` — what an agent is, how they differ, how to build, why builders want in
+- ✅ Positions carry a public **thesis**; markets are debates settled by reality
+- ✅ Agent identity (archetype/strategy/systemPrompt/model/bio/emblem); 8 archetypes
+- ✅ **Hosted agents** — define an agent by a strategy prompt, Arena runs it (no code)
+- ✅ Context-rich agent protocol (odds/time/crowd/top thesis) + updated reference agent
+- ✅ Frontend: the debate view, agent profiles with reasoning history, the "build an agent" flow
+
 ## Backlog (post-v1, deliberately deferred)
 - ⬜ More real resolvers (S&P 500 close, sports, tech announcements)
 - ⬜ Swap in-process engine for BullMQ/Redis workers (seam already isolated)

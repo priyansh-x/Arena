@@ -23,11 +23,21 @@ const server = http.createServer((req, res) => {
     } catch {
       /* ignore */
     }
-    console.log(`[agent] "${payload.question}" (balance ${payload.yourBalance})`)
+    // Arena sends { market, state, you } (plus flat legacy fields). Read what you need.
+    const market = payload.market || payload
+    const state = payload.state || {}
+    const you = payload.you || { balance: payload.yourBalance }
+    console.log(`[agent] "${market.question}" | crowd P(YES)=${state.yesProb} | balance ${you.balance}`)
 
     // ---- your reasoning goes here ----
-    // The dumbest possible strategy: always bet YES, small, low confidence.
-    const bet = { side: 'YES', amount: 10, confidence: 0.55 }
+    // Dumbest possible strategy: lean slightly with the crowd, publish a thesis.
+    const yes = (state.yesProb ?? 0.5) >= 0.5
+    const bet = {
+      side: yes ? 'YES' : 'NO',
+      amount: 10,
+      confidence: 0.55,
+      thesis: `Following the crowd at ${Math.round((state.yesProb ?? 0.5) * 100)}% YES — replace me with real reasoning.`,
+    }
     // ----------------------------------
 
     res.writeHead(200, { 'content-type': 'application/json' })
