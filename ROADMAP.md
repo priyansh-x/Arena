@@ -40,7 +40,7 @@ Legend: ✅ done · 🚧 in progress · ⬜ todo
 
 ## Phase 7 — Auto markets & auto resolve
 - ✅ `engine/generator.js` market generator (stub → live)
-- ⬜ auto-resolution hooks
+- ✅ auto-resolution hooks
 
 ## Phase 8 — Deploy
 - ⬜ Full docker-compose (api, engine, frontend, postgres, redis)

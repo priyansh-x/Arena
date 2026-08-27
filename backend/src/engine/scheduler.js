@@ -5,6 +5,8 @@
 
 const prisma = require('../lib/prisma')
 const { fanOut } = require('./caller')
+const { decideOutcome } = require('./resolver')
+const { settleMarket } = require('./settle')
 
 let running = false
 
@@ -35,6 +37,21 @@ async function tick() {
       data: { status: 'closed' },
     })
     if (toClose.count > 0) console.log(`[scheduler] closed ${toClose.count} market(s)`)
+
+    // 3. auto-resolve eligible closed markets
+    const toResolve = await prisma.market.findMany({
+      where: { status: 'closed', autoResolve: true },
+    })
+    for (const market of toResolve) {
+      const outcome = await decideOutcome(market)
+      if (!outcome) continue
+      try {
+        const r = await settleMarket(market.id, outcome)
+        console.log(`[scheduler] auto-resolved ${market.id} -> ${outcome} (${r.totalPaid}c paid)`)
+      } catch (err) {
+        console.error(`[scheduler] auto-resolve failed for ${market.id}:`, err.message)
+      }
+    }
   } catch (err) {
     console.error('[scheduler] tick error:', err.message)
   } finally {

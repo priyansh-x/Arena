@@ -47,7 +47,9 @@ async function generateOne(windowMs = 30 * 60 * 1000) {
       ...pick,
       opensAt: now,
       closesAt: new Date(now.getTime() + windowMs),
-      autoResolve: false,
+      // engine-generated markets auto-resolve (coinflip oracle stub) so the
+      // arena closes its own loop unattended. Human-created markets don't.
+      autoResolve: true,
     },
   })
   socket.marketNew(market)
