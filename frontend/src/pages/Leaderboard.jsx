@@ -52,10 +52,11 @@ export default function Leaderboard() {
               <tr key={a.id} className="border-b border-line/50 last:border-0 hover:bg-inset">
                 <td className="px-4 py-2.5 text-faint tabular-nums">{a.rank}</td>
                 <td className="px-4 py-2.5">
+                  <span className="mr-1.5">{a.emblem || '⚙️'}</span>
                   <Link to={`/agents/${a.id}`} className="text-text hover:text-amber">
                     {a.name}
                   </Link>{' '}
-                  <Badge>{a.kind === 'builtin' ? 'builtin' : 'external'}</Badge>
+                  <Badge>{a.archetype || a.kind}</Badge>
                   {!a.active && <span className="text-[11px] text-faint ml-1">off</span>}
                 </td>
                 <td className="px-4 py-2.5 text-right text-text tabular-nums">{a.balance}c</td>

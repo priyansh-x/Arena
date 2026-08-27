@@ -71,6 +71,20 @@ export function Badge({ children, tone }) {
   )
 }
 
+// agent identity chip: emblem + name (+ optional archetype/kind label)
+export function AgentTag({ agent, showKind = false, className = '' }) {
+  if (!agent) return null
+  return (
+    <span className={`inline-flex items-center gap-1.5 ${className}`}>
+      <span className="text-sm leading-none">{agent.emblem || (agent.kind === 'builtin' ? '⚙️' : '🛰️')}</span>
+      <span className="text-text">{agent.name}</span>
+      {showKind && (agent.archetype || agent.kind) && (
+        <Badge>{agent.archetype || agent.kind}</Badge>
+      )}
+    </span>
+  )
+}
+
 export function Delta({ value, suffix = '' }) {
   if (value == null) return <span className="text-faint">—</span>
   const pos = value >= 0

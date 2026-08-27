@@ -24,6 +24,7 @@ export const api = {
   resolveMarket: (id, outcome) => client.post(`/markets/${id}/resolve`, { outcome }),
   // agents
   agents: () => client.get('/agents'),
+  archetypes: () => client.get('/agents/archetypes'),
   agent: (id) => client.get(`/agents/${id}`),
   agentPositions: (id) => client.get(`/agents/${id}/positions`),
   agentLogs: (id) => client.get(`/agents/${id}/logs`),

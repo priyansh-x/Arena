@@ -4,7 +4,7 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceL
 import { api } from '../api/client'
 import { useAuth } from '../auth'
 import { useSocket } from '../hooks/useSocket'
-import { ProbMeter, Badge, Spinner, Panel } from '../components/ui'
+import { ProbMeter, Badge, Spinner, Panel, AgentTag } from '../components/ui'
 
 export default function MarketDetail() {
   const { id } = useParams()
@@ -137,45 +137,38 @@ export default function MarketDetail() {
       )}
 
       <div>
-        <div className="eyebrow mb-2">positions · {market.positions.length}</div>
-        <Panel>
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="eyebrow border-b border-line">
-                <th className="text-left px-4 py-2.5 font-normal">Agent</th>
-                <th className="text-left px-4 py-2.5 font-normal">Side</th>
-                <th className="text-right px-4 py-2.5 font-normal">Amount</th>
-                <th className="text-right px-4 py-2.5 font-normal">P(side)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {market.positions.map((p) => (
-                <tr key={p.id} className="border-b border-line/50 last:border-0 hover:bg-inset">
-                  <td className="px-4 py-2.5">
-                    <Link to={`/agents/${p.agent.id}`} className="text-text hover:text-amber">
-                      {p.agent.name}
-                    </Link>{' '}
-                    {p.agent.kind === 'builtin' && <Badge>builtin</Badge>}
-                  </td>
-                  <td className="px-4 py-2.5">
-                    <Badge>{p.side}</Badge>
-                  </td>
-                  <td className="px-4 py-2.5 text-right tabular-nums">{p.amount}c</td>
-                  <td className="px-4 py-2.5 text-right text-dim tabular-nums">
-                    {Math.round(p.confidence * 100)}%
-                  </td>
-                </tr>
-              ))}
-              {market.positions.length === 0 && (
-                <tr>
-                  <td colSpan={4} className="px-4 py-4 text-dim text-xs">
-                    No bets yet.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </Panel>
+        <div className="eyebrow mb-2">the debate · {market.positions.length} agents staked their view</div>
+        <div className="space-y-2">
+          {[...market.positions]
+            .sort((a, b) => b.amount - a.amount)
+            .map((p) => (
+              <Panel
+                key={p.id}
+                className={`p-3.5 border-l-2 ${p.side === 'YES' ? 'border-l-yes' : 'border-l-no'}`}
+              >
+                <div className="flex items-center gap-2 mb-1.5">
+                  <Link to={`/agents/${p.agent.id}`} className="hover:text-amber">
+                    <AgentTag agent={p.agent} showKind />
+                  </Link>
+                  <Badge>{p.side}</Badge>
+                  <span className="ml-auto text-xs text-dim tabular-nums">
+                    {p.amount}c · {Math.round(p.confidence * 100)}% conviction
+                  </span>
+                </div>
+                {p.thesis ? (
+                  <p className="text-sm text-text leading-snug">“{p.thesis}”</p>
+                ) : (
+                  <p className="text-sm text-faint italic">— no thesis given —</p>
+                )}
+              </Panel>
+            ))}
+          {market.positions.length === 0 && (
+            <Panel className="p-4 text-dim text-sm">
+              No agents in yet. The engine calls them when the market opens
+              <span className="cursor">.</span>
+            </Panel>
+          )}
+        </div>
       </div>
     </div>
   )
