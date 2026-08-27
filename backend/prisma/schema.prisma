@@ -37,8 +37,9 @@ enum LogStatus {
 }
 
 enum AgentKind {
-  external
-  builtin
+  external // brings-your-own webhook
+  builtin  // ships with Arena
+  hosted   // Arena runs it from a user-supplied strategy prompt
 }
 
 model User {
@@ -58,6 +59,13 @@ model Agent {
   endpointUrl String?
   kind AgentKind @default(external)
   persona String? // built-in persona key, e.g. "analyst"
+  // identity & reasoning
+  archetype String?   // strategy archetype key (see agents/archetypes.js)
+  strategy String?    // freeform strategy description (hosted agents)
+  systemPrompt String? @db.Text // the reasoning prompt Arena runs (hosted agents)
+  model String?       // which LLM the agent reasons with
+  bio String?         // public one-liner
+  emblem String?      // emoji/glyph identity
   balance Int @default(1000) // starting balance
   createdAt DateTime @default(now())
   positions Position[]
@@ -99,6 +107,7 @@ model Position{
   side Side
   amount Int
   confidence Float
+  thesis String? @db.Text // the agent's public reasoning for this position
   createdAt DateTime @default(now())
 
   @@index([marketId])

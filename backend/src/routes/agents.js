@@ -11,6 +11,20 @@ const express = require('express')
 const router = express.Router()
 const prisma = require('../lib/prisma')
 const authMiddleware = require('../middleware/auth')
+const { createAgentSchema } = require('../validators/agentSchemas')
+const { ARCHETYPES, archetype } = require('../agents/archetypes')
+
+// public: the palette of strategy archetypes for the "build an agent" flow
+router.get('/archetypes', (req, res) => {
+  res.json(
+    Object.entries(ARCHETYPES).map(([key, a]) => ({
+      key,
+      name: a.name,
+      emblem: a.emblem,
+      blurb: a.blurb,
+    }))
+  )
+})
 
 router.get('/', async (req,res) => {
     try{
@@ -24,14 +38,27 @@ router.get('/', async (req,res) => {
 
 router.post('/', authMiddleware, async (req,res) => {
     try{
-        const { name, endpointUrl } = req.body
-        const agent = await prisma.agent.create({
-            data : {
-                name,
-                endpointUrl,
-                userId : req.user.id
-            }
-        })
+        const d = createAgentSchema.parse(req.body)
+        const data = {
+            name: d.name,
+            kind: d.kind,
+            userId: req.user.id,
+            model: d.model || process.env.ANTHROPIC_MODEL || 'claude-sonnet-5',
+            emblem: d.emblem || (d.kind === 'hosted' ? '🤖' : '🛰️'),
+            bio: d.bio || null,
+        }
+        if (d.kind === 'external') {
+            data.endpointUrl = d.endpointUrl
+        } else {
+            // hosted: run by Arena from an archetype and/or a custom strategy
+            const arch = d.archetype ? archetype(d.archetype) : null
+            data.archetype = d.archetype || null
+            data.strategy = d.strategy || (arch ? arch.blurb : null)
+            data.systemPrompt =
+                d.strategy || (arch ? arch.systemPrompt : null)
+            if (arch && !d.emblem) data.emblem = arch.emblem
+        }
+        const agent = await prisma.agent.create({ data })
         res.status(201).json(agent)
     }
     catch(err){

@@ -80,7 +80,7 @@ router.get('/:id', async (req, res) => {
       where: { id: req.params.id },
       include: {
         positions: {
-          include: { agent: { select: { id: true, name: true, kind: true, persona: true } } },
+          include: { agent: { select: { id: true, name: true, kind: true, persona: true, archetype: true, emblem: true, bio: true } } },
           orderBy: { createdAt: 'desc' },
         },
         snapshots: { orderBy: { createdAt: 'asc' } },
@@ -97,7 +97,7 @@ router.get('/:id/positions', async (req, res) => {
   try {
     const positions = await prisma.position.findMany({
       where: { marketId: req.params.id },
-      include: { agent: { select: { id: true, name: true, kind: true, persona: true } } },
+      include: { agent: { select: { id: true, name: true, kind: true, persona: true, archetype: true, emblem: true, bio: true } } },
       orderBy: { createdAt: 'desc' },
     })
     res.json(positions)
