@@ -77,6 +77,8 @@ model Market{
   outcome Outcome?
   category String?
   autoResolve Boolean @default(false)
+  resolverKey String? // which real-world resolver decides this market (null => coinflip stub)
+  resolverData Json?  // resolver baseline captured at creation (e.g. reference price)
   announced Boolean @default(false) // engine has fanned out to agents
   positions Position[]
   transactions Transaction[]

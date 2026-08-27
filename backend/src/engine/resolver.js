@@ -1,31 +1,37 @@
 // Auto-resolution hooks. A resolver inspects a closed market and returns
 // 'YES' | 'NO' | null (null = can't decide yet, leave for a human).
 //
-// v1 ships a single honest placeholder: `coinflip`, a random oracle used for
-// autoResolve demo markets so the full loop (open -> bet -> close -> resolve ->
-// settle) runs completely unattended. Real resolvers (price feeds, USGS, sports
-// APIs) slot in here keyed by category without touching the scheduler.
+// Resolution order for an autoResolve market:
+//   1. if market.resolverKey names a real-world resolver, use it (real data);
+//   2. else fall back to the honest `coinflip` placeholder so the loop still closes.
+//
+// Real resolvers (USGS quakes, Coinbase BTC, ...) live in resolvers/realWorld.js
+// and are keyless & public. Add more there and reference them by resolverKey.
 
-const RESOLVERS = {
-  // honest placeholder — a coin, not a claim about reality
+const { resolvers: realResolvers } = require('./resolvers/realWorld')
+
+const STUBS = {
   coinflip: async () => (Math.random() < 0.5 ? 'YES' : 'NO'),
 }
 
-// pick a resolver for a market. Only autoResolve markets are ever auto-resolved.
 function resolverFor(market) {
   if (!market.autoResolve) return null
-  // future: map market.category -> a real resolver. For now everything coinflips.
-  return RESOLVERS.coinflip
+  if (market.resolverKey && realResolvers[market.resolverKey]) {
+    return realResolvers[market.resolverKey]
+  }
+  return STUBS.coinflip
 }
 
 async function decideOutcome(market) {
   const r = resolverFor(market)
   if (!r) return null
   try {
-    return await r(market)
-  } catch {
-    return null
+    const out = await r(market)
+    return out === 'YES' || out === 'NO' ? out : null
+  } catch (err) {
+    console.error(`[resolver] ${market.resolverKey || 'coinflip'} failed:`, err.message)
+    return null // undecidable this tick; try again next tick or leave for a human
   }
 }
 
-module.exports = { decideOutcome, RESOLVERS }
+module.exports = { decideOutcome, resolverFor, STUBS }

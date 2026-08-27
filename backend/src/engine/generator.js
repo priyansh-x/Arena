@@ -1,28 +1,31 @@
 // Auto-generate markets so the arena never runs dry.
-// v1: draws from a seed bank of real-world-shaped questions with near-term
-// close times. Later: swap SEED_BANK for a live news/event feed.
+// Entries with a `resolverKey` resolve against real public data (USGS, Coinbase);
+// the rest fall back to the honest coinflip stub. See resolvers/realWorld.js.
 
 const prisma = require('../lib/prisma')
 const socket = require('../lib/socket')
+const { baselines } = require('./resolvers/realWorld')
 
 const SEED_BANK = [
   {
     category: 'crypto',
-    question: 'Will BTC be higher 6 hours from now than it is right now?',
-    description: 'Short-horizon momentum question on Bitcoin spot price.',
-    resolutionCriteria: 'Resolves YES if BTC-USD spot at close time exceeds the price at open time.',
-  },
-  {
-    category: 'tech',
-    question: 'Will a major AI lab announce a new frontier model within 24 hours?',
-    description: 'Any of the top labs shipping a headline model release.',
-    resolutionCriteria: 'Resolves YES if a top-5 lab publicly announces a new flagship model before close.',
+    resolverKey: 'btc_up',
+    question: 'Will BTC be higher when this market closes than it is right now?',
+    description: 'Short-horizon momentum question on Bitcoin spot price (Coinbase BTC-USD).',
+    resolutionCriteria: 'Resolves YES if Coinbase BTC-USD spot at close exceeds the price captured at open.',
   },
   {
     category: 'world',
-    question: 'Will a magnitude 5.0+ earthquake be recorded somewhere on Earth today?',
-    description: 'Global seismic activity base-rate question.',
-    resolutionCriteria: 'Resolves YES per USGS if any M5.0+ event is recorded before close.',
+    resolverKey: 'usgs_quake_m5',
+    question: 'Will a magnitude 5.0+ earthquake be recorded somewhere on Earth before this closes?',
+    description: 'Global seismic activity, resolved live from the USGS feed.',
+    resolutionCriteria: 'Resolves YES per USGS if any M5.0+ event is recorded between open and close.',
+  },
+  {
+    category: 'tech',
+    question: 'Will a major AI lab announce a new frontier model within this window?',
+    description: 'Any top lab shipping a headline model release.',
+    resolutionCriteria: 'Resolves YES if a top-5 lab publicly announces a new flagship model before close.',
   },
   {
     category: 'markets',
@@ -30,30 +33,38 @@ const SEED_BANK = [
     description: 'US equity index daily direction.',
     resolutionCriteria: 'Resolves YES if the S&P 500 closes above its prior session close.',
   },
-  {
-    category: 'sports',
-    question: 'Will the higher-seeded team win the next major match in progress?',
-    description: 'Generic favourite-vs-underdog question.',
-    resolutionCriteria: 'Resolves YES if the pre-match favourite wins the referenced fixture.',
-  },
 ]
 
 // create one market from the bank, opening now, closing in `windowMs`
 async function generateOne(windowMs = 30 * 60 * 1000) {
   const pick = SEED_BANK[Math.floor(Math.random() * SEED_BANK.length)]
   const now = new Date()
+
+  // capture a baseline for real resolvers that need one (e.g. BTC open price)
+  let resolverData = null
+  if (pick.resolverKey && baselines[pick.resolverKey]) {
+    try {
+      resolverData = await baselines[pick.resolverKey]()
+    } catch (err) {
+      console.error(`[generator] baseline capture failed for ${pick.resolverKey}:`, err.message)
+    }
+  }
+
   const market = await prisma.market.create({
     data: {
-      ...pick,
+      category: pick.category,
+      question: pick.question,
+      description: pick.description,
+      resolutionCriteria: pick.resolutionCriteria,
+      resolverKey: pick.resolverKey || null,
+      resolverData,
       opensAt: now,
       closesAt: new Date(now.getTime() + windowMs),
-      // engine-generated markets auto-resolve (coinflip oracle stub) so the
-      // arena closes its own loop unattended. Human-created markets don't.
       autoResolve: true,
     },
   })
   socket.marketNew(market)
-  console.log(`[generator] created market ${market.id}: ${market.question}`)
+  console.log(`[generator] created ${market.id}: ${market.question} [${pick.resolverKey || 'coinflip'}]`)
   return market
 }
 
