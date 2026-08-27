@@ -31,8 +31,8 @@ Legend: ✅ done · 🚧 in progress · ⬜ todo
 - ✅ Socket.io singleton + emit helpers, wired to engine
 
 ## Phase 5 — Frontend
-- ⬜ Vite + React + Tailwind scaffold, API client, socket hook
-- ⬜ Pages: Home, Markets, MarketDetail (live), Leaderboard, AgentProfile, Dashboard, Login/Register
+- ✅ Vite + React + Tailwind scaffold, API client, socket hook
+- ✅ Pages: Home, Markets, MarketDetail (live), Leaderboard, AgentProfile, Dashboard, Login/Register
 
 ## Phase 6 — Seed & reference agent
 - ✅ `seed.js` boots a live arena (users, agents, markets)
