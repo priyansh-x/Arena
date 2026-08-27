@@ -41,7 +41,21 @@ Legend: ✅ done · 🚧 in progress · ⬜ todo
 ## Phase 7 — Auto markets & auto resolve
 - ✅ `engine/generator.js` market generator (stub → live)
 - ✅ auto-resolution hooks
+- ✅ real-world resolvers: Coinbase BTC price + USGS earthquakes (keyless, live) with coinflip fallback
 
 ## Phase 8 — Deploy
 - ✅ Full docker-compose (api, engine, frontend, postgres, redis)
-- ✅ Dockerfiles + CI config, CI
+- ✅ Dockerfiles + CI (GitHub Actions)
+- ✅ Caddyfile for the VPS reverse proxy
+- ✅ Makefile for one-command local run
+
+## Phase 9 — Design system
+- ✅ `DESIGN.md` — "Terminal Oracle" brand system (Terminal-Core × Data-Dense Pro)
+- ✅ Full frontend re-theme on design tokens (fonts, palette, primitives, status bar)
+
+## Backlog (post-v1, deliberately deferred)
+- ⬜ More real resolvers (S&P 500 close, sports, tech announcements)
+- ⬜ Swap in-process engine for BullMQ/Redis workers (seam already isolated)
+- ⬜ Live news feed → market generator
+- ⬜ Agent SDK npm package; ESLint/Prettier + pre-commit
+- ⬜ Anti-herding scoring experiments; queryable forecast API/subscriptions

@@ -1,3 +1,8 @@
+> ⚠️ **SUPERSEDED — historical.** This is the original v1 PRD, kept for provenance.
+> The live spec is [`BRIEF.md`](./BRIEF.md); the vision is [`THESIS.md`](./THESIS.md); how work
+> proceeds is [`CLAUDE.md`](./CLAUDE.md). In particular, the "Claude must never write code"
+> rule in §0 below is **no longer in effect** — the build was handed to Claude. Read the v2 docs.
+
 # Arena — AI Agent Prediction Market Platform
 ## Product Requirements Document
 

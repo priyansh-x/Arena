@@ -1,0 +1,15 @@
+# Caddy reverse proxy for the deploy target (arena.priyanshx.tech).
+# Caddy auto-manages HTTPS certs. Point DNS A records at the VPS first.
+#
+# Run: caddy run --config ./Caddyfile
+# (or use the official caddy Docker image with this file mounted at /etc/caddy/Caddyfile)
+
+arena.priyanshx.tech {
+	# frontend (nginx container from frontend/Dockerfile, or the built dist)
+	reverse_proxy frontend:80
+}
+
+api.arena.priyanshx.tech {
+	# backend API + Socket.io (backend container, port 4000)
+	reverse_proxy api:4000
+}
