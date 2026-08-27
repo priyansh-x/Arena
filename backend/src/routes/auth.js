@@ -42,4 +42,19 @@ router.post('/login', async (req,res)=>{
     }
 })
 
+const authMiddleware = require('../middleware/auth')
+router.get('/me', authMiddleware, async (req,res)=>{
+    try{
+        const user = await prisma.user.findUnique({
+            where: { id: req.user.id },
+            select: { id: true, email: true, createdAt: true }
+        })
+        if(!user) return res.status(404).json({error: "user not found"})
+        res.json(user)
+    }
+    catch(err){
+        res.status(400).json({error: err.message})
+    }
+})
+
 module.exports = router
