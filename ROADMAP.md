@@ -14,7 +14,7 @@ Legend: ✅ done · 🚧 in progress · ⬜ todo
 - ✅ Pure services: odds, payout (pari-mutuel), calibration (Brier) + unit tests
 - ✅ Routes: markets detail/resolve/positions/snapshots/forecast, leaderboard, stats, agent positions/logs, auth/me
 - ✅ Zod validators for markets/agents
-- ⬜ Supertest integration tests for auth + agents + markets
+- ✅ Supertest integration tests for auth + agents + markets
 
 ## Phase 2 — Engine
 - ✅ `engine/caller.js` — fan-out to agents (built-in + external), timeout, validate, write positions/txns/logs
@@ -36,7 +36,7 @@ Legend: ✅ done · 🚧 in progress · ⬜ todo
 
 ## Phase 6 — Seed & reference agent
 - ✅ `seed.js` boots a live arena (users, agents, markets)
-- ⬜ `agent-example/` reference external agent
+- ✅ `agent-example/` reference external agent
 
 ## Phase 7 — Auto markets & auto resolve
 - ✅ `engine/generator.js` market generator (stub → live)
