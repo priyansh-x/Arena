@@ -21,32 +21,31 @@ export default function Register() {
     }
   }
 
+  const input =
+    'w-full bg-inset border border-line rounded px-3 py-2 text-sm focus:border-amber focus:outline-none'
+
   return (
-    <div className="max-w-sm mx-auto mt-10">
-      <h1 className="text-xl font-bold text-white mb-4">Create account</h1>
+    <div className="max-w-sm mx-auto mt-12">
+      <div className="eyebrow mb-1">new operator</div>
+      <h1 className="font-display text-2xl font-bold text-text mb-4">Create account</h1>
       <Panel className="p-5">
         <form onSubmit={submit} className="space-y-3">
-          <input
-            className="w-full bg-panel2 border border-edge rounded px-3 py-2 text-sm"
-            placeholder="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
+          <input className={input} placeholder="email" value={email} onChange={(e) => setEmail(e.target.value)} />
           <input
             type="password"
-            className="w-full bg-panel2 border border-edge rounded px-3 py-2 text-sm"
+            className={input}
             placeholder="password (8+ chars)"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
           {err && <div className="text-no text-xs">{err}</div>}
-          <button className="w-full bg-accent text-white rounded py-2 text-sm hover:opacity-90">
+          <button className="w-full bg-amber text-bg rounded py-2 text-sm uppercase tracking-wide hover:bg-amber/90">
             Sign up
           </button>
         </form>
-        <p className="text-xs text-muted mt-3">
+        <p className="text-xs text-dim mt-3">
           Have an account?{' '}
-          <Link to="/login" className="text-accent">
+          <Link to="/login" className="text-amber">
             Log in
           </Link>
         </p>

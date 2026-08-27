@@ -8,10 +8,7 @@ export default function Dashboard() {
   const { user } = useAuth()
   const [agents, setAgents] = useState([])
   const [msg, setMsg] = useState('')
-
-  // create market form
   const [mkt, setMkt] = useState({ question: '', resolutionCriteria: '', category: '', minutes: 30 })
-  // register agent form
   const [agent, setAgent] = useState({ name: '', endpointUrl: '' })
 
   async function loadAgents() {
@@ -34,7 +31,7 @@ export default function Dashboard() {
         closesAt: new Date(Date.now() + mkt.minutes * 60000).toISOString(),
       })
       setMkt({ question: '', resolutionCriteria: '', category: '', minutes: 30 })
-      setMsg('Market created — agents will bet on the next engine tick.')
+      setMsg('Market created — agents bet on the next engine tick.')
     } catch (e) {
       setMsg(e.response?.data?.error || 'failed')
     }
@@ -53,16 +50,21 @@ export default function Dashboard() {
     }
   }
 
-  const input = 'w-full bg-panel2 border border-edge rounded px-3 py-2 text-sm'
+  const input =
+    'w-full bg-inset border border-line rounded px-3 py-2 text-sm focus:border-amber focus:outline-none'
+  const btn = 'bg-amber text-bg rounded px-4 py-2 text-sm uppercase tracking-wide hover:bg-amber/90'
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-bold text-white">Dashboard</h1>
-      {msg && <div className="text-xs text-accent">{msg}</div>}
+      <div>
+        <div className="eyebrow mb-1">operator console</div>
+        <h1 className="font-display text-2xl font-bold text-text">Dashboard</h1>
+      </div>
+      {msg && <div className="text-xs text-amber border border-amber/30 rounded px-3 py-2">{msg}</div>}
 
       <div className="grid md:grid-cols-2 gap-4">
         <Panel className="p-4">
-          <h2 className="text-sm uppercase tracking-wide text-muted mb-3">Create a market</h2>
+          <div className="eyebrow mb-3">create a market</div>
           <form onSubmit={createMarket} className="space-y-2">
             <input
               className={input}
@@ -91,14 +93,12 @@ export default function Dashboard() {
                 onChange={(e) => setMkt({ ...mkt, minutes: Number(e.target.value) })}
               />
             </div>
-            <button className="bg-accent text-white rounded px-4 py-2 text-sm hover:opacity-90">
-              Create
-            </button>
+            <button className={btn}>Create</button>
           </form>
         </Panel>
 
         <Panel className="p-4">
-          <h2 className="text-sm uppercase tracking-wide text-muted mb-3">Register an agent</h2>
+          <div className="eyebrow mb-3">register an agent</div>
           <form onSubmit={registerAgent} className="space-y-2">
             <input
               className={input}
@@ -112,38 +112,36 @@ export default function Dashboard() {
               value={agent.endpointUrl}
               onChange={(e) => setAgent({ ...agent, endpointUrl: e.target.value })}
             />
-            <button className="bg-accent text-white rounded px-4 py-2 text-sm hover:opacity-90">
-              Register
-            </button>
+            <button className={btn}>Register</button>
           </form>
-          <p className="text-xs text-muted mt-2">
-            See the contract in AGENTS.md — Arena POSTs the question, you return{' '}
-            <code className="text-gray-400">{'{side, amount, confidence}'}</code>.
+          <p className="text-xs text-dim mt-2 leading-relaxed">
+            Arena POSTs the question; you return{' '}
+            <code className="text-amber">{'{side, amount, confidence}'}</code>. Full contract in AGENTS.md.
           </p>
         </Panel>
       </div>
 
       <div>
-        <h2 className="text-sm uppercase tracking-wide text-muted mb-2">Your agents</h2>
+        <div className="eyebrow mb-2">your agents</div>
         <Panel>
-          {agents.length === 0 && <div className="p-4 text-muted text-sm">No agents yet.</div>}
+          {agents.length === 0 && <div className="p-4 text-dim text-sm">No agents yet.</div>}
           {agents.map((a) => (
             <div
               key={a.id}
-              className="px-4 py-3 border-b border-edge/50 last:border-0 flex items-center gap-3"
+              className="px-4 py-3 border-b border-line/50 last:border-0 flex items-center gap-3"
             >
-              <Link to={`/agents/${a.id}`} className="text-white hover:text-accent">
+              <Link to={`/agents/${a.id}`} className="text-text hover:text-amber">
                 {a.name}
               </Link>
               <Badge>{a.active ? 'active' : 'off'}</Badge>
-              <span className="text-xs text-muted">{a.balance}c</span>
-              <div className="ml-auto flex gap-2">
+              <span className="text-xs text-dim tabular-nums">{a.balance}c</span>
+              <div className="ml-auto flex gap-3">
                 <button
                   onClick={async () => {
                     await api.toggleAgent(a.id)
                     loadAgents()
                   }}
-                  className="text-xs text-muted hover:text-white"
+                  className="text-[11px] uppercase tracking-wide text-dim hover:text-text"
                 >
                   {a.active ? 'deactivate' : 'activate'}
                 </button>
@@ -154,7 +152,7 @@ export default function Dashboard() {
                       loadAgents()
                     }
                   }}
-                  className="text-xs text-no hover:opacity-80"
+                  className="text-[11px] uppercase tracking-wide text-no hover:opacity-80"
                 >
                   delete
                 </button>

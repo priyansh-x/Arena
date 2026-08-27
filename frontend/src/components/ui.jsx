@@ -1,58 +1,93 @@
-// Small shared UI primitives.
+// Canonical Arena components. See DESIGN.md.
 
-export function ProbBar({ yesProb, showLabels = true }) {
+export function Panel({ children, className = '' }) {
+  return (
+    <div className={`bg-raised border border-line rounded ${className}`}>{children}</div>
+  )
+}
+
+// The signature element: a YES/NO probability meter with a big mono percentage.
+export function ProbMeter({ yesProb, size = 'md' }) {
   const yes = Math.round((yesProb ?? 0.5) * 100)
+  const big = size === 'lg'
   return (
     <div>
-      {showLabels && (
-        <div className="flex justify-between text-xs mb-1">
-          <span className="text-yes">YES {yes}%</span>
-          <span className="text-no">NO {100 - yes}%</span>
-        </div>
-      )}
-      <div className="h-2 rounded-full overflow-hidden bg-no/40 flex">
-        <div className="bg-yes h-full" style={{ width: `${yes}%` }} />
+      <div className="flex items-baseline justify-between mb-1.5">
+        <span className={`font-display font-bold text-yes ${big ? 'text-4xl' : 'text-lg'}`}>
+          {yes}
+          <span className="text-dim font-mono text-xs font-normal ml-0.5">% YES</span>
+        </span>
+        <span className={`text-no font-mono ${big ? 'text-base' : 'text-xs'}`}>
+          {100 - yes}% NO
+        </span>
+      </div>
+      <div className="h-1.5 rounded-full overflow-hidden bg-no/25 flex">
+        <div
+          className="bg-yes h-full transition-all duration-500"
+          style={{ width: `${yes}%`, boxShadow: '0 0 8px rgba(70,198,107,0.5)' }}
+        />
       </div>
     </div>
   )
 }
 
-export function StatCard({ label, value, sub }) {
+export function Stat({ label, value, delta, sub }) {
   return (
-    <div className="bg-panel border border-edge rounded-lg px-4 py-3">
-      <div className="text-2xl font-bold text-white">{value}</div>
-      <div className="text-xs text-muted uppercase tracking-wide">{label}</div>
-      {sub && <div className="text-xs text-muted mt-1">{sub}</div>}
+    <div className="bg-raised border border-line rounded px-4 py-3">
+      <div className="font-display text-2xl font-bold text-text leading-none">{value}</div>
+      <div className="eyebrow mt-2">{label}</div>
+      {delta != null && (
+        <div className={`text-xs mt-1 ${delta >= 0 ? 'text-yes' : 'text-no'}`}>
+          {delta >= 0 ? '▲' : '▼'} {Math.abs(delta)}
+        </div>
+      )}
+      {sub && <div className="text-xs text-dim mt-1">{sub}</div>}
     </div>
   )
 }
 
-export function Badge({ children, tone = 'default' }) {
-  const tones = {
-    default: 'bg-panel2 text-muted border-edge',
-    open: 'bg-accent/15 text-accent border-accent/30',
-    closed: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30',
-    resolved: 'bg-green-500/15 text-green-400 border-green-500/30',
-    builtin: 'bg-accent/15 text-accent border-accent/30',
-    external: 'bg-blue-500/15 text-blue-300 border-blue-500/30',
-    YES: 'bg-yes/15 text-yes border-yes/30',
-    NO: 'bg-no/15 text-no border-no/30',
-  }
+const BADGE = {
+  default: 'text-dim border-line',
+  open: 'text-amber border-amber/40',
+  closed: 'text-dim border-line-bright',
+  resolved: 'text-yes border-yes/40',
+  builtin: 'text-amber border-amber/40',
+  external: 'text-text border-line-bright',
+  active: 'text-yes border-yes/40',
+  off: 'text-faint border-line',
+  YES: 'text-yes border-yes/40',
+  NO: 'text-no border-no/40',
+}
+
+export function Badge({ children, tone }) {
+  const cls = BADGE[children] || BADGE[tone] || BADGE.default
   return (
     <span
-      className={`inline-block text-[10px] uppercase tracking-wide px-2 py-0.5 rounded border ${
-        tones[children] || tones[tone] || tones.default
-      }`}
+      className={`inline-block font-mono uppercase px-1.5 py-0.5 rounded border leading-none ${cls}`}
+      style={{ fontSize: 10, letterSpacing: '0.06em' }}
     >
       {children}
     </span>
   )
 }
 
-export function Spinner({ label = 'loading…' }) {
-  return <div className="text-muted text-sm py-8 text-center animate-pulse">{label}</div>
+export function Delta({ value, suffix = '' }) {
+  if (value == null) return <span className="text-faint">—</span>
+  const pos = value >= 0
+  return (
+    <span className={pos ? 'text-yes' : 'text-no'}>
+      {pos ? '+' : ''}
+      {value}
+      {suffix}
+    </span>
+  )
 }
 
-export function Panel({ children, className = '' }) {
-  return <div className={`bg-panel border border-edge rounded-lg ${className}`}>{children}</div>
+export function Spinner({ label = 'reading tape' }) {
+  return (
+    <div className="text-dim text-sm py-10 text-center font-mono">
+      {label}
+      <span className="cursor">.</span>
+    </div>
+  )
 }

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
 import { useSocket } from '../hooks/useSocket'
-import { Badge, Spinner, Panel } from '../components/ui'
+import { Badge, Spinner, Panel, Delta } from '../components/ui'
 
 export default function Leaderboard() {
   const [rows, setRows] = useState([])
@@ -20,54 +20,59 @@ export default function Leaderboard() {
 
   if (loading) return <Spinner />
 
+  // best (lowest) calibration among agents that have one, for a subtle highlight
+  const bestCal = Math.min(...rows.filter((r) => r.calibration != null).map((r) => r.calibration))
+
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-bold text-white">Leaderboard</h1>
-        <p className="text-muted text-sm">
+        <div className="eyebrow mb-1">natural selection of world-models</div>
+        <h1 className="font-display text-2xl font-bold text-text">Leaderboard</h1>
+        <p className="text-dim text-sm mt-1 max-w-2xl leading-relaxed">
           Ranked by balance. Calibration is mean Brier score over resolved bets —{' '}
-          <span className="text-white">lower is better</span>. Being rich isn't the same as being
-          calibrated.
+          <span className="text-text">lower is better</span>. Being rich isn't the same as being
+          calibrated; the board shows both.
         </p>
       </div>
       <Panel>
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-muted text-xs border-b border-edge">
-              <th className="text-left px-4 py-2 font-normal">#</th>
-              <th className="text-left px-4 py-2 font-normal">Agent</th>
-              <th className="text-right px-4 py-2 font-normal">Balance</th>
-              <th className="text-right px-4 py-2 font-normal">Profit</th>
-              <th className="text-right px-4 py-2 font-normal">Win rate</th>
-              <th className="text-right px-4 py-2 font-normal">Calibration</th>
-              <th className="text-right px-4 py-2 font-normal">Bets</th>
+            <tr className="eyebrow border-b border-line">
+              <th className="text-left px-4 py-2.5 font-normal w-8">#</th>
+              <th className="text-left px-4 py-2.5 font-normal">Agent</th>
+              <th className="text-right px-4 py-2.5 font-normal">Balance</th>
+              <th className="text-right px-4 py-2.5 font-normal">Profit</th>
+              <th className="text-right px-4 py-2.5 font-normal">Win</th>
+              <th className="text-right px-4 py-2.5 font-normal">Brier ↓</th>
+              <th className="text-right px-4 py-2.5 font-normal">Bets</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((a) => (
-              <tr key={a.id} className="border-b border-edge/50 last:border-0 hover:bg-panel2">
-                <td className="px-4 py-2 text-muted">{a.rank}</td>
-                <td className="px-4 py-2">
-                  <Link to={`/agents/${a.id}`} className="text-white hover:text-accent">
+              <tr key={a.id} className="border-b border-line/50 last:border-0 hover:bg-inset">
+                <td className="px-4 py-2.5 text-faint tabular-nums">{a.rank}</td>
+                <td className="px-4 py-2.5">
+                  <Link to={`/agents/${a.id}`} className="text-text hover:text-amber">
                     {a.name}
                   </Link>{' '}
-                  {a.kind === 'builtin' ? <Badge>builtin</Badge> : <Badge>external</Badge>}
-                  {!a.active && <span className="text-xs text-muted ml-1">(off)</span>}
+                  <Badge>{a.kind === 'builtin' ? 'builtin' : 'external'}</Badge>
+                  {!a.active && <span className="text-[11px] text-faint ml-1">off</span>}
                 </td>
-                <td className="px-4 py-2 text-right text-white">{a.balance}c</td>
-                <td
-                  className={`px-4 py-2 text-right ${a.profit >= 0 ? 'text-yes' : 'text-no'}`}
-                >
-                  {a.profit >= 0 ? '+' : ''}
-                  {a.profit}
+                <td className="px-4 py-2.5 text-right text-text tabular-nums">{a.balance}c</td>
+                <td className="px-4 py-2.5 text-right tabular-nums">
+                  <Delta value={a.profit} />
                 </td>
-                <td className="px-4 py-2 text-right text-muted">
+                <td className="px-4 py-2.5 text-right text-dim tabular-nums">
                   {a.winRate == null ? '—' : `${Math.round(a.winRate * 100)}%`}
                 </td>
-                <td className="px-4 py-2 text-right text-muted">
+                <td
+                  className={`px-4 py-2.5 text-right tabular-nums ${
+                    a.calibration != null && a.calibration === bestCal ? 'text-amber' : 'text-dim'
+                  }`}
+                >
                   {a.calibration == null ? '—' : a.calibration.toFixed(3)}
                 </td>
-                <td className="px-4 py-2 text-right text-muted">{a.totalBets}</td>
+                <td className="px-4 py-2.5 text-right text-dim tabular-nums">{a.totalBets}</td>
               </tr>
             ))}
           </tbody>
