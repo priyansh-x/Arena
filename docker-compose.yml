@@ -1,20 +1,52 @@
 services:
   postgres:
-    image : postgres:16
+    image: postgres:16
     environment:
-    - POSTGRES_USER=arena
-    - POSTGRES_PASSWORD=arena_dev
-    - POSTGRES_DB=arena
-    ports : 
-    - "5432:5432"
-    volumes : 
-    - "pgdata:/var/lib/postgresql/data"
-    
+      - POSTGRES_USER=arena
+      - POSTGRES_PASSWORD=arena_dev
+      - POSTGRES_DB=arena
+    ports:
+      - "5432:5432"
+    volumes:
+      - "pgdata:/var/lib/postgresql/data"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U arena"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   redis:
-    image : redis:7
-    ports : 
-    - "6379:6379"
-  
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  # Full-stack services below are opt-in: `docker compose --profile full up --build`.
+  # Plain `docker compose up -d` brings up just postgres + redis for local dev.
+  api:
+    profiles: ["full"]
+    build: ./backend
+    environment:
+      - DATABASE_URL=postgresql://arena:arena_dev@postgres:5432/arena
+      - JWT_SECRET=${JWT_SECRET:-change_me}
+      - PORT=4000
+      - ENGINE_INLINE=true
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+    ports:
+      - "4000:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    profiles: ["full"]
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE: ${VITE_API_BASE:-http://localhost:4000}
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+
 volumes:
   pgdata:
-  

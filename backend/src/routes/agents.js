@@ -121,4 +121,32 @@ router.patch("/:id/toggle", authMiddleware, async(req,res)=>{
 })
 
 
+router.get('/:id/positions', async (req, res) => {
+    try{
+        const positions = await prisma.position.findMany({
+            where: { agentId: req.params.id },
+            include: { market: { select: { id: true, question: true, status: true, outcome: true } } },
+            orderBy: { createdAt: 'desc' }
+        })
+        res.json(positions)
+    }
+    catch(err){
+        res.status(400).json({error: err.message})
+    }
+})
+
+router.get('/:id/logs', async (req, res) => {
+    try{
+        const logs = await prisma.log.findMany({
+            where: { agentId: req.params.id },
+            orderBy: { createdAt: 'desc' },
+            take: 100
+        })
+        res.json(logs)
+    }
+    catch(err){
+        res.status(400).json({error: err.message})
+    }
+})
+
 module.exports = router

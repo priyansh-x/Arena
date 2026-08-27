@@ -24,7 +24,7 @@ Content-Type: application/json
 ### Create agent (needs token from Login above)
 POST {{baseUrl}}/api/agents
 Content-Type: application/json
-Authorization: Bearer PASTE_TOKEN_HERE
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbXNkMHRzbWswMDAwMXNtMGF6NHkwM3p5IiwiaWF0IjoxNzg2MDgzNzQ2LCJleHAiOjE3ODY2ODg1NDZ9.LHf6h6EmqKc_zA9zm-jmjTgUgqHB27iS1pwfqdtownQ
 
 {
   "name": "TestBot",

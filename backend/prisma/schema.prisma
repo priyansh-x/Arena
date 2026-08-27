@@ -14,8 +14,8 @@ enum MarketStatus {
   resolved
 }
 
-enum Outcome { 
-  YES 
+enum Outcome {
+  YES
   NO
 }
 
@@ -26,8 +26,8 @@ enum Side {
 
 enum TransactionType {
   bet
-  payout 
-  refund 
+  payout
+  refund
 }
 
 enum LogStatus {
@@ -36,8 +36,13 @@ enum LogStatus {
   error
 }
 
+enum AgentKind {
+  external
+  builtin
+}
+
 model User {
-  id String @id @default(cuid()) 
+  id String @id @default(cuid())
   email String @unique
   passwordHash String
   createdAt DateTime @default(now())
@@ -47,10 +52,12 @@ model User {
 
 model Agent {
   id String @id @default(cuid())
-  userId String
-  user User @relation(fields:[userId], references:[id])
-  name String 
-  endpointUrl String 
+  userId String?
+  user User? @relation(fields:[userId], references:[id])
+  name String
+  endpointUrl String?
+  kind AgentKind @default(external)
+  persona String? // built-in persona key, e.g. "analyst"
   balance Int @default(1000) // starting balance
   createdAt DateTime @default(now())
   positions Position[]
@@ -61,15 +68,22 @@ model Agent {
 
 model Market{
   id String @id @default(cuid())
-  creatorId String 
-  creator User @relation(fields:[creatorId], references: [id])
+  creatorId String?
+  creator User? @relation(fields:[creatorId], references: [id])
   status MarketStatus @default(open)
-  opensAt DateTime 
+  opensAt DateTime
   closesAt DateTime
+  resolvedAt DateTime?
   outcome Outcome?
-  positions Position[] 
+  category String?
+  autoResolve Boolean @default(false)
+  resolverKey String? // which real-world resolver decides this market (null => coinflip stub)
+  resolverData Json?  // resolver baseline captured at creation (e.g. reference price)
+  announced Boolean @default(false) // engine has fanned out to agents
+  positions Position[]
   transactions Transaction[]
   logs Log[]
+  snapshots Snapshot[]
   createdAt DateTime @default(now())
   question String
   description String
@@ -78,30 +92,35 @@ model Market{
 
 model Position{
   id String @id @default(cuid())
-  agentId String 
-  marketId String 
+  agentId String
+  marketId String
   market Market @relation(fields:[marketId], references: [id])
   agent Agent @relation(fields: [agentId], references : [id])
   side Side
   amount Int
   confidence Float
   createdAt DateTime @default(now())
+
+  @@index([marketId])
+  @@index([agentId])
 }
 
 model Transaction{
   id String @id @default(cuid())
   agentId String
-  marketId String 
+  marketId String
   market Market @relation(fields:[marketId], references: [id])
   agent Agent @relation(fields: [agentId], references : [id])
   amount Int
   type TransactionType
   createdAt DateTime @default(now())
+
+  @@index([agentId])
 }
 
 model Log{
   id String @id @default(cuid())
-  agentId String 
+  agentId String
   marketId String
   market Market @relation(fields:[marketId], references: [id])
   agent Agent @relation(fields: [agentId], references : [id])
@@ -110,4 +129,20 @@ model Log{
   createdAt DateTime @default(now())
   requestPayload Json
   responsePayload Json
+
+  @@index([agentId])
+  @@index([marketId])
+}
+
+// Time series of a market's odds — powers charts and records the aggregate forecast.
+model Snapshot{
+  id String @id @default(cuid())
+  marketId String
+  market Market @relation(fields:[marketId], references: [id])
+  yesPool Int
+  noPool Int
+  yesProb Float
+  createdAt DateTime @default(now())
+
+  @@index([marketId])
 }
